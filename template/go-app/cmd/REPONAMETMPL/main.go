@@ -13,6 +13,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/kemadev/REPONAMETMPL/web"
 	"github.com/kemadev/go-framework/pkg/client/cache"
 	"github.com/kemadev/go-framework/pkg/config"
 	"github.com/kemadev/go-framework/pkg/convenience/headval"
@@ -96,24 +97,24 @@ func main() {
 		// Secure frontend with security headers
 		r.Use(sechead.NewMiddleware(sechead.SecHeadersDefaultStrict))
 
-		// // Handle template assets
-		// tmplFS := web.GetTmplFS()
-		// renderer, _ := render.New(tmplFS)
-		// r.Handle(
-		// 	otel.WrapHandler(
-		// 		"GET /",
-		// 		ExampleTemplateRender(renderer),
-		// 	),
-		// )
+		// Handle template assets
+		tmplFS := web.GetTmplFS()
+		renderer, _ := render.New(tmplFS)
+		r.Handle(
+			otel.WrapHandler(
+				"GET /",
+				ExampleTemplateRender(renderer),
+			),
+		)
 	})
 
-	// // Handle static (public) assets
-	// r.Handle(
-	// 	otel.WrapHandler(
-	// 		"GET /static/",
-	// 		http.FileServerFS(web.GetStaticFS()).ServeHTTP,
-	// 	),
-	// )
+	// Handle static (public) assets
+	r.Handle(
+		otel.WrapHandler(
+			"GET /static/",
+			http.FileServerFS(web.GetStaticFS()).ServeHTTP,
+		),
+	)
 
 	log.Logger(packageName).Warn("starting server")
 

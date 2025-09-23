@@ -52,7 +52,7 @@ services:
     extends:
       service: app-template
     profiles:
-      - never
+      - dev
 
   app-debug:
     extends:
@@ -74,7 +74,7 @@ services:
   jaeger:
     image: jaegertracing/jaeger:2.10.0
     profiles:
-      - never
+      - dev
     ports:
       - 4317:4317
       - 4318:4318

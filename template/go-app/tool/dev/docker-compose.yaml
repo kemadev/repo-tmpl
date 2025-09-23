@@ -93,7 +93,7 @@ services:
   postgresql:
     image: postgres:17-alpine
     profiles:
-      - never
+      - dev
     environment:
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: dev
@@ -116,7 +116,7 @@ services:
   valkey:
     image: valkey/valkey:8-alpine
     profiles:
-      - never
+      - dev
     environment:
       VALKEY_EXTRA_FLAGS: --protected-mode yes --requirepass dev
     volumes:
@@ -140,7 +140,7 @@ volumes:
 services:
   opensearch:
     profiles:
-      - never
+      - dev
     image: opensearchproject/opensearch:3
     environment:
       cluster.name: dev
@@ -167,7 +167,7 @@ services:
       - app
   opensearch-dashboards:
     profiles:
-      - never
+      - dev
     image: opensearchproject/opensearch-dashboards:3
     ports:
       - 5601:5601

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kemadev/REPONAMETMPL/web"
 	"github.com/kemadev/go-framework/pkg/client/cache"
 	"github.com/kemadev/go-framework/pkg/client/database"
 	"github.com/kemadev/go-framework/pkg/client/search"
@@ -32,7 +33,6 @@ import (
 	"github.com/kemadev/go-framework/pkg/router"
 	"github.com/kemadev/go-framework/pkg/server"
 	"github.com/kemadev/go-framework/pkg/timeout"
-	"github.com/kemadev/go-framework/web"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/valkey-io/valkey-go"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -130,7 +130,7 @@ func main() {
 
 		// Handle template assets
 		tmplFS := web.GetTmplFS()
-		renderer, _ := render.New(tmplFS)
+		renderer, _ := render.New(tmplFS, web.TemplateBaseDirName)
 		r.Handle(
 			otel.WrapHandler(
 				"GET /",
@@ -142,7 +142,7 @@ func main() {
 	// Handle static (public) assets
 	r.Handle(
 		otel.WrapHandler(
-			"GET /static/",
+			"GET /"+web.StaticBaseDirName+"/",
 			http.FileServerFS(web.GetStaticFS()).ServeHTTP,
 		),
 	)

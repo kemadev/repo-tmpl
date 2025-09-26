@@ -13,8 +13,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/kemadev/REPONAMETMPL/web"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kemadev/go-framework/pkg/client/cache"
+	"github.com/kemadev/go-framework/pkg/client/database"
+	"github.com/kemadev/go-framework/pkg/client/search"
 	"github.com/kemadev/go-framework/pkg/config"
 	"github.com/kemadev/go-framework/pkg/convenience/headval"
 	"github.com/kemadev/go-framework/pkg/convenience/log"
@@ -30,13 +32,15 @@ import (
 	"github.com/kemadev/go-framework/pkg/router"
 	"github.com/kemadev/go-framework/pkg/server"
 	"github.com/kemadev/go-framework/pkg/timeout"
+	"github.com/kemadev/go-framework/web"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/valkey-io/valkey-go"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 )
 
-const packageName = "github.com/kemadev/REPONAMETMPL/cmd/REPONAMETMPL"
+const packageName = "github.com/kemadev/go-framework/cmd/REPONAMETMPL"
 
 func main() {
 	// Get app config
@@ -49,12 +53,25 @@ func main() {
 	}
 
 	// Create clients, for use in handlers
-	client, err := cache.NewClient(conf.Client.Cache)
+	cacheClient, err := cache.NewClient(conf.Client.Cache)
 	if err != nil {
 		flog.FallbackError(err)
 		os.Exit(1)
 	}
-	defer client.Close()
+	defer cacheClient.Close()
+
+	databaseClient, err := database.NewClient(conf.Client.Database)
+	if err != nil {
+		flog.FallbackError(err)
+		os.Exit(1)
+	}
+	defer databaseClient.Close()
+
+	searchClient, err := search.NewClient(conf.Client.Search, conf.Runtime)
+	if err != nil {
+		flog.FallbackError(err)
+		os.Exit(1)
+	}
 
 	r := router.New()
 
@@ -87,8 +104,22 @@ func main() {
 
 	r.Handle(
 		otel.WrapHandler(
-			"GET /db",
-			ExampleDBHandler(client),
+			"GET /cache",
+			ExampleCacheHandler(cacheClient),
+		),
+	)
+
+	r.Handle(
+		otel.WrapHandler(
+			"GET /database",
+			ExampleDatabaseHandler(databaseClient),
+		),
+	)
+
+	r.Handle(
+		otel.WrapHandler(
+			"GET /search",
+			ExampleSearchHandler(searchClient),
 		),
 	)
 
@@ -115,8 +146,6 @@ func main() {
 			http.FileServerFS(web.GetStaticFS()).ServeHTTP,
 		),
 	)
-
-	log.Logger(packageName).Warn("starting server")
 
 	server.Run(otel.WrapMux(r, packageName), *conf)
 }
@@ -200,12 +229,12 @@ func ExampleTemplateRender(
 	}
 }
 
-func ExampleDBHandler(client valkey.Client) func(w http.ResponseWriter, r *http.Request) {
+func ExampleCacheHandler(client valkey.Client) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := client.Do(r.Context(), client.B().Set().Key("key").Value(time.Now().String()).Build()).
 			Error()
 		if err != nil {
-			log.ErrLog(packageName, "error db set", err)
+			log.ErrLog(packageName, "error cache set", err)
 			// Prefer graceful degradation instead of throwing a 5XX error
 			http.Error(
 				w,
@@ -216,6 +245,66 @@ func ExampleDBHandler(client valkey.Client) func(w http.ResponseWriter, r *http.
 			return
 		}
 
-		resp.JSON(w, "ok")
+		type ExampleOutput struct {
+			Success bool
+		}
+
+		resp.JSON(w, ExampleOutput{
+			Success: true,
+		})
+	}
+}
+
+func ExampleDatabaseHandler(client *pgxpool.Pool) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var id int
+
+		err := client.QueryRow(
+			r.Context(),
+			`INSERT INTO tasks (created_at) VALUES ($1) RETURNING id`,
+			time.Now(),
+		).Scan(&id)
+		if err != nil {
+			log.ErrLog(packageName, "error database insert", err)
+			// Prefer graceful degradation instead of throwing a 5XX error
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+
+			return
+		}
+
+		type ExampleOutput struct {
+			ID int
+		}
+
+		resp.JSON(w, ExampleOutput{ID: id})
+	}
+}
+
+func ExampleSearchHandler(
+	client *opensearchapi.Client,
+) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		res, err := client.Info(r.Context(), nil)
+		if err != nil {
+			log.ErrLog(packageName, "error search info", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		type ExampleOutput struct {
+			ClusterName string
+		}
+
+		resp.JSON(w, ExampleOutput{
+			ClusterName: res.ClusterName,
+		})
 	}
 }

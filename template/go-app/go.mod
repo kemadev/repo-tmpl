@@ -4,7 +4,7 @@ go 1.24.7
 
 require (
 	github.com/jackc/pgx/v5 v5.7.6
-	github.com/kemadev/go-framework v0.11.0
+	github.com/kemadev/go-framework v0.12.0
 	github.com/opensearch-project/opensearch-go/v4 v4.5.0
 	github.com/valkey-io/valkey-go v1.0.66
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.63.0

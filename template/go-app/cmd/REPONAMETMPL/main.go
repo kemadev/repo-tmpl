@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/kemadev/REPONAMETMPL/web"
 	"github.com/kemadev/go-framework/pkg/client/cache"
 	"github.com/kemadev/go-framework/pkg/client/database"
 	"github.com/kemadev/go-framework/pkg/client/search"
@@ -33,6 +32,7 @@ import (
 	"github.com/kemadev/go-framework/pkg/router"
 	"github.com/kemadev/go-framework/pkg/server"
 	"github.com/kemadev/go-framework/pkg/timeout"
+	"github.com/kemadev/go-framework/web"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/valkey-io/valkey-go"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -40,7 +40,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 )
 
-const packageName = "github.com/kemadev/go-framework/cmd/REPONAMETMPL"
+const packageName = "github.com/kemadev/go-framework/cmd/go-framework"
 
 func main() {
 	// Get app config
@@ -86,14 +86,22 @@ func main() {
 	// Add monitoring endpoints
 	r.Handle(
 		monitoring.LivenessHandler(
-			// Add your check function
-			func() monitoring.CheckResults { return monitoring.CheckResults{} },
+			func() monitoring.CheckResults {
+				// Add your check function logic
+				return monitoring.CheckResults{}
+			},
 		),
 	)
 	r.Handle(
 		monitoring.ReadinessHandler(
-			// Add your check function
-			func() monitoring.CheckResults { return monitoring.CheckResults{} },
+			func() monitoring.CheckResults {
+				return monitoring.CheckResults{
+					"database": database.Check(databaseClient),
+					"cache":    cache.Check(cacheClient),
+					"search":   search.Check(searchClient),
+					// Add your check functions
+				}
+			},
 		),
 	)
 
@@ -199,7 +207,8 @@ func ExampleTemplateRender(
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := tr.Execute(
 			w,
-			"tmpl/hello.html",
+			// Mind directory name in tmplate FS
+			"hello.html",
 			map[string]any{
 				"WorldName": "WoRlD",
 			},

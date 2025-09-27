@@ -34,6 +34,8 @@ github.com/kemadev/go-framework v0.10.0 h1:AYTwqXY7Nk8p7TmKoM2ANhneA/KdK+2OBmkKO
 github.com/kemadev/go-framework v0.10.0/go.mod h1:9diuzJlYLFtQ+eJ3LKoq8OMUoyHZxpH7V0bCccr10LM=
 github.com/kemadev/go-framework v0.11.0 h1:cimQQC6V3SR6ipLbfcyR6gcWFAqmsr6MewCWsfshOK8=
 github.com/kemadev/go-framework v0.11.0/go.mod h1:9diuzJlYLFtQ+eJ3LKoq8OMUoyHZxpH7V0bCccr10LM=
+github.com/kemadev/go-framework v0.12.0 h1:159TDCvbtmiNaX4/Lqd5Lx8nrgRJlkbk3zn33SK/RqM=
+github.com/kemadev/go-framework v0.12.0/go.mod h1:RlVMQXyYjsliKzlCMWElQ08+A3lcUOap2cV5F9/R0Lo=
 github.com/onsi/gomega v1.36.2 h1:koNYke6TVk6ZmnyHrCXba/T/MoLBXFjeC1PtvYgw0A8=
 github.com/onsi/gomega v1.36.2/go.mod h1:DdwyADRjrc825LhMEkD76cHR5+pUnjhUN8GlHlRPHzY=
 github.com/opensearch-project/opensearch-go/v4 v4.5.0 h1:26XckmmF6MhlXt91Bu1yY6R51jy1Ns/C3XgIfvyeTRo=

@@ -40,7 +40,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 )
 
-const packageName = "github.com/kemadev/go-framework/cmd/go-framework"
+const packageName = "github.com/kemadev/REPONAMETMPL/cmd/REPONAMETMPL"
 
 func main() {
 	// Get app config

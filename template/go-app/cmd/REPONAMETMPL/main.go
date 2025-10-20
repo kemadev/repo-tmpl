@@ -148,12 +148,6 @@ func main() {
 				ExampleTemplateRender(renderer),
 			),
 		)
-		r.Handle(
-			otel.WrapHandler(
-				"POST /",
-				ExampleTemplateRender(renderer),
-			),
-		)
 	})
 
 	// Handle static (public) assets

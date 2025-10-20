@@ -302,11 +302,13 @@ func ExampleSearchHandler(
 		res, err := client.Info(r.Context(), nil)
 		if err != nil {
 			log.ErrLog(packageName, "error search info", err)
+			// Prefer graceful degradation instead of throwing a 5XX error
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
 				http.StatusInternalServerError,
 			)
+
 			return
 		}
 

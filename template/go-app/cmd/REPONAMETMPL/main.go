@@ -44,7 +44,7 @@ const packageName = "github.com/kemadev/REPONAMETMPL/cmd/REPONAMETMPL"
 
 func main() {
 	// Get app config
-	conf, err := config.NewManager().Load()
+	conf, err := config.Load()
 	if err != nil {
 		flog.FallbackError(fmt.Errorf("error getting config: %w", err))
 		os.Exit(1)
@@ -88,6 +88,7 @@ func main() {
 				// Add your check function logic
 				return monitoring.CheckResults{}
 			},
+			conf,
 		),
 	)
 	r.Handle(
@@ -156,7 +157,7 @@ func main() {
 		),
 	)
 
-	server.Run(otel.WrapMux(r, packageName), *conf)
+	server.Run(otel.WrapMux(r, packageName), conf)
 }
 
 func ExampleHandler(w http.ResponseWriter, r *http.Request) {

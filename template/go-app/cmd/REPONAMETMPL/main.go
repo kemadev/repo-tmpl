@@ -44,9 +44,7 @@ const packageName = "github.com/kemadev/REPONAMETMPL/cmd/REPONAMETMPL"
 
 func main() {
 	// Get app config
-	configManager := config.NewManager()
-
-	conf, err := configManager.Get()
+	conf, err := config.NewManager().Load()
 	if err != nil {
 		flog.FallbackError(fmt.Errorf("error getting config: %w", err))
 		os.Exit(1)
